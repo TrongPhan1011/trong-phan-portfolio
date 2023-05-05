@@ -1,0 +1,75 @@
+@import 'normalize.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&display=swap');
+
+:root {
+}
+
+html {
+    scroll-behavior: smooth;
+    font-family: 'Jost', sans-serif;
+}
+
+//nav
+
+// .active {
+//     color: var(--2t-yellow-1);
+// }
+
+//crack mui premium
+
+// drop shadow
+.drop-item {
+    border-radius: 8px;
+
+    box-shadow: 9px 9px 18px #d1d1d1, -9px -9px 18px #ffffff;
+}
+
+// hover:
+
+.hvr-grow {
+    display: inline-block;
+    vertical-align: middle;
+    transform: translateZ(0);
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0);
+    backface-visibility: hidden;
+    -moz-osx-font-smoothing: grayscale;
+    transition-duration: 0.3s;
+    transition-property: transform;
+}
+
+.hvr-grow:hover,
+.hvr-grow:focus,
+.hvr-grow:active {
+    transform: scale(1.1);
+}
+
+// animation
+.fadeIn {
+    animation: fadeIn 0.3s forwards;
+}
+
+.fadeOut {
+    animation: fadeOut 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+}
+@keyframes fadeOut {
+    from {
+        background-color: white;
+        box-shadow: 0 1px 3px black;
+    }
+    to {
+        background-color: transparent;
+        box-shadow: none;
+    }
+}
