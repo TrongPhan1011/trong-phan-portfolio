@@ -21,10 +21,13 @@ function About() {
                             Welcome to my portfolio!
                         </p>
                         <p className={cx(' leading-8 text-xl text-slate-500')}>
-                            Hello there! I'm Trong, a <span className={cx('text-tp-orange')}>Web developer</span>. I'm
-                            very passionate and dedicated to my work. I'm from Thua Thien Hue province and I'm currently
-                            studying at IUH (Industrial University of Ho Chi Minh City). My major is Sofware
-                            engineering.
+                            I’m a Backend Developer with 1 year of experience in Backend Web and Mobile development. But
+                            I also have knowledge about Frontend Developer through some small projects
+                            <br />
+                            <br />I enjoy building and solving Full-Stack problems such as building API, optimizing
+                            database performance and ensuring system security, designing UI/UX,...Passionate about
+                            staying updated with the latest technologies and continuously improving development
+                            processes
                         </p>
                         <Button
                             href="#contact"

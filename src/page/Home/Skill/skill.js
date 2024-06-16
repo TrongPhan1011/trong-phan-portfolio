@@ -17,6 +17,9 @@ import imgMUI from '~/assets/img/mui.png';
 import imgGit from '~/assets/img/git.svg';
 import imgFigma from '~/assets/img/figma.svg';
 import imgAWS from '~/assets/img/aws.png';
+import typescript from '~/assets/img/typescript.png';
+import nextjs from '~/assets/img/nextjs.png';
+import nestjs from '~/assets/img/nestjs.png';
 
 const cx = classNames;
 
@@ -30,6 +33,7 @@ function Skill() {
                     <div className={cx('text-3xl text-center text-tp-orange font-medium mb-10 ')}>My Skill</div>
                     <p className={cx('text-2xl font-medium')}>- Back-end</p>
                     <div className={cx('flex flex-wrap justify-center ')}>
+                        <ItemSkill src={nestjs} />
                         <ItemSkill src={imgNodeJS} />
                         <ItemSkill src={imgJava} />
                         <ItemSkill src={imgSpring} />
@@ -39,6 +43,7 @@ function Skill() {
                     </div>
                     <p className={cx('text-2xl font-medium mt-10')}>- Front-end</p>
                     <div className={cx('flex flex-wrap justify-center ')}>
+                        <ItemSkill src={nextjs} />
                         <ItemSkill src={imgJS} />
                         <ItemSkill src={imgReactJS} />
                         <ItemSkill src={imgTailWind} />
@@ -46,6 +51,7 @@ function Skill() {
                     </div>
                     <p className={cx('text-2xl font-medium mt-10')}>- Other</p>
                     <div className={cx('flex flex-wrap justify-center ')}>
+                        <ItemSkill src={typescript} />
                         <ItemSkill src={imgGit} />
                         <ItemSkill src={imgFigma} />
                         <ItemSkill src={imgAWS} />

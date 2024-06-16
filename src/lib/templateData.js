@@ -9,7 +9,7 @@ export const dataProject = [
         img: imgLCN,
         member: 5,
         type: ['Mobile', 'Web'],
-        position: ['Team leader'],
+        position: ['Team leader', 'Fullstack Developer', 'Designer'],
         technology: [
             { type: 'Back-end', detail: ['NodeJS', 'ExpressJS', 'Socket.io', 'JWT', 'AWS S3', 'MongoDB'] },
             { type: 'Front-end', detail: ['ReactJS', 'React Native', 'TailwindCSS', 'Redux toolkit'] },
@@ -30,7 +30,7 @@ export const dataProject = [
         img: img2TMovies,
         member: 2,
         type: ['Desktop app', 'Web'],
-        position: ['Team leader'],
+        position: ['Team leader', 'Fullstack Developer', 'Designer'],
         technology: [
             { type: 'Back-end', detail: ['Java', 'Spring boot', 'JWT', 'AWS S3', 'MySQL'] },
             {
@@ -40,6 +40,6 @@ export const dataProject = [
             { type: 'Deploy', detail: ['Netlify', 'Heroku'] },
         ],
         src: [],
-        demo: 'https://admin-2tmovies.trongphan.tk/',
+        demo: '',
     },
 ];

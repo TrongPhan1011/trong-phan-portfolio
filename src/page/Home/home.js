@@ -6,6 +6,7 @@ import About from './About';
 import Skill from './Skill';
 import Project from './Project';
 import Contact from './Contact';
+import Experience from './Experience/Experience';
 
 const cx = classNames;
 function Home() {
@@ -26,11 +27,11 @@ function Home() {
                 >
                     <div className={cx('text-3xl font-medium text-tp-orange', 'max-xs:text-2xl')}>Hello, I'm</div>
                     <span className={cx('text-5xl font-bold', 'max-xs:text-4xl')}>Phan Huu Trong</span>
-                    <div className={cx('text-xl ')}>A Web Developer</div>
+                    <div className={cx('text-xl ')}>A Fullstack Developer</div>
                     <div
                         className={cx(
-                            'flex space-x-3 justify-center items-center pt-5',
-                            'max-xs:flex-col max-xs:w-full',
+                            'flex space-x-3  items-center pt-5',
+                            'max-xs:flex-col max-xs:w-full max-xs:justify-center',
                         )}
                     >
                         <Button
@@ -66,7 +67,9 @@ function Home() {
                 </div>
             </div>
             <About />
+            <Experience />
             <Skill />
+
             <Project />
             <Contact />
             <div className={cx('w-full bg-slate-300 text-center p-5 text-white')}>TrongPhan</div>

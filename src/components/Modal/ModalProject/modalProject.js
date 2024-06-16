@@ -47,9 +47,9 @@ function ModalProject({ data, children }) {
             <Modal
                 isShow={showModal}
                 isHidden={handleHideModal}
-                className={cx('w-3/4 text-black p-2 overflow-auto max-h-screen pr-3 pl-3', 'max-xs:w-full')}
+                className={cx('w-3/4 max-h-[800px] text-black p-2 overflow-auto  pr-3 pl-3', 'max-xs:w-full')}
             >
-                <div className={cx('p-5 text-slate-600')}>
+                <div className={cx('p-5 lg:px-52 text-slate-600')}>
                     <div className={cx('hidden w-full justify-end ', 'max-xs:flex')}>
                         <Button onClick={handleHideModal} className={cx('text-red-500 text-3xl')}>
                             <FaTimesCircle />
@@ -61,12 +61,15 @@ function ModalProject({ data, children }) {
                             {data.name}
                         </p>
                     </div>
-                    <div className={cx(' flex font-light items-center')}>
-                        <span className={cx('font-medium')}>Demo:</span>{' '}
-                        <Button href={data?.demo} target="blank" className={'underline italic text-blue-500'}>
-                            {data?.demo}
-                        </Button>
-                    </div>
+
+                    {data.demo && (
+                        <div className={cx(' flex font-light items-center')}>
+                            <span className={cx('font-medium')}>Demo:</span>{' '}
+                            <Button href={data.demo} target="blank" className={'underline italic text-blue-500'}>
+                                {data.demo}
+                            </Button>
+                        </div>
+                    )}
                     <p className={cx(' font-light ')}>
                         <span className={cx('font-medium')}>Description:</span> {data.description}
                     </p>
@@ -83,10 +86,11 @@ function ModalProject({ data, children }) {
                         <span className={cx('font-medium')}>Technology:</span>
                     </p>
                     {renderTech()}
-
-                    <p className={cx(' font-light   ')}>
-                        <span className={cx('font-medium')}>Source code:</span>
-                    </p>
+                    {data.src.length > 0 && (
+                        <p className={cx(' font-light   ')}>
+                            <span className={cx('font-medium')}>Source code:</span>
+                        </p>
+                    )}
                     {renderSrcCode()}
                 </div>
             </Modal>

@@ -53,7 +53,12 @@ function Header() {
                     <RxTextAlignJustify />
                 </Button>
 
-                <div className={cx('w-3/4 flex items-center space-x-10  text-lg font-medium', 'max-xs:hidden')}>
+                <div
+                    className={cx(
+                        'w-3/4 flex justify-end items-center space-x-10  text-lg font-medium',
+                        'max-xs:hidden',
+                    )}
+                >
                     <Button to="#home">Home</Button>
                     <Button href="#about">About</Button>
                     <Button href="#skill">Skill</Button>
@@ -84,7 +89,7 @@ function Header() {
                 <Button
                     href="../../../file/cv/mycv.pdf"
                     className={cx('border-2  border-tp-orange p-2  pr-5 pl-5 max-w-[200px] justify-center')}
-                    download="CV_Phan Hữu Trọng_Fresher_Web developer.pdf"
+                    download="CV_Phan Hữu Trọng_Fullstack Developer.pdf"
                 >
                     Download CV
                 </Button>
