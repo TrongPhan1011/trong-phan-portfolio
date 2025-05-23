@@ -21,13 +21,13 @@ function About() {
                             Welcome to my portfolio!
                         </p>
                         <p className={cx(' leading-8 text-xl text-slate-500')}>
-                            I’m a Backend Developer with 1 year of experience in Backend Web and Mobile development. But
-                            I also have knowledge about Frontend Developer through some small projects
+                            I'm a software engineer at NVIDIA, a global leader in graphics processing, AI, and
+                            high-performance computing.
                             <br />
-                            <br />I enjoy building and solving Full-Stack problems such as building API, optimizing
-                            database performance and ensuring system security, designing UI/UX,...Passionate about
-                            staying updated with the latest technologies and continuously improving development
-                            processes
+                            <br />I enjoy building and solving Full-Stack problems such as building and deploy software
+                            system to VM, optimizing database performance and ensuring system security, designing
+                            UI/UX,...Passionate about staying updated with the latest technologies and continuously
+                            improving development processes
                         </p>
                         <Button
                             href="#contact"
