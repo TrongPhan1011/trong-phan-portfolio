@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import AgentLayer from './AgentLayer';
+import AutoPlay from './AutoPlay';
 import { EngineContext, ModeContext } from './context';
 import StudioEngine from './engine';
 import './studio.scss';
@@ -50,6 +51,7 @@ function Studio({ children }) {
                         <main className="st-world">{children}</main>
                     </div>
                     <AgentLayer />
+                    <AutoPlay />
                     <div ref={spacer} className="st-spacer" aria-hidden="true" />
                 </div>
             </ModeContext.Provider>

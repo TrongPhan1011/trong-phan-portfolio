@@ -13,6 +13,14 @@ const SMOOTH_MS = 110;
 const SPOT_BAND = 22; // thinnest margin around a section where an agent can wait
 const FX_PER_FRAME = 4;
 
+// Auto scroll: designing runs at a steady pace, finished sections get a pause, camera moves take a fixed time.
+const AUTO_BUILD = 0.11; // screen heights per second
+const AUTO_DWELL_MS = 3000;
+const AUTO_MOVE_MS = 2000;
+const AUTO_START_MS = 1000; // starts by itself this long after the page opens, unless the visitor scrolls first
+const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape']);
+const INPUT_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+
 const SKILL = {
     draw: 'draw',
     line: 'draw',
@@ -286,6 +294,11 @@ export default class StudioEngine {
         this.keepProgress = null;
         this.fxOn = false;
         this.fxBudget = 0;
+        this.introY = 0;
+        this.auto = null;
+        this.autoStartAt = 0;
+        this.autoListeners = new Set();
+        this.autoBar = null;
     }
 
     // ---------------------------------------------------------------- registry
@@ -328,6 +341,7 @@ export default class StudioEngine {
         this.bg = bg;
         this.coarse = window.matchMedia('(pointer: coarse)').matches;
         window.addEventListener('resize', this.onResize);
+        for (const type of INPUT_EVENTS) window.addEventListener(type, this.onUserInput, { passive: true });
         screen.addEventListener('load', this.onAsset, true);
         if (document.fonts) {
             document.fonts.ready.then(this.onAsset);
@@ -341,6 +355,7 @@ export default class StudioEngine {
             this.y = window.scrollY;
             this.view = this.y;
             this.render(this.y, performance.now() / 1000);
+            this.autoStartAt = this.mountedAt + AUTO_START_MS;
         } else {
             this.enterPresent(false);
         }
@@ -351,7 +366,10 @@ export default class StudioEngine {
 
     unmount() {
         cancelAnimationFrame(this.raf);
+        this.auto = null;
+        this.autoStartAt = 0;
         window.removeEventListener('resize', this.onResize);
+        for (const type of INPUT_EVENTS) window.removeEventListener(type, this.onUserInput, { passive: true });
         if (this.screen) this.screen.removeEventListener('load', this.onAsset, true);
         if (document.fonts && document.fonts.removeEventListener) {
             document.fonts.removeEventListener('loadingdone', this.onAsset);
@@ -379,6 +397,12 @@ export default class StudioEngine {
         if (this.needSchedule) this.rebuild();
         if (this.mode !== 'build') return;
         if (this.needMeasure) this.measure();
+        if (this.autoStartAt && now >= this.autoStartAt) {
+            this.autoStartAt = 0;
+            // a page restored at its end stays there instead of jumping back to the top
+            if (window.scrollY < this.total - 2) this.startAuto();
+        }
+        if (this.auto) this.autoStep(now, dt);
 
         const target = window.scrollY;
         const tw = this.tween;
@@ -395,13 +419,82 @@ export default class StudioEngine {
         }
 
         const first = this.order[0];
-        const intro = first ? first.start + first.len * INTRO * easeOut(clamp((now - this.mountedAt - 300) / INTRO_MS)) : 0;
+        const intro = first
+            ? first.start + first.len * INTRO * easeOut(clamp((now - this.mountedAt - 300) / INTRO_MS))
+            : 0;
+        this.introY = intro;
         const view = Math.max(this.y, intro);
         const dv = view - this.view;
         this.view = view;
         // completion effects only while the build moves forward at a human pace
         this.fxOn = dv > 0.05 && dv < this.vh * 0.35 && !this.tween && (intro > this.y || now >= this.snapUntil);
         this.render(view, now / 1000);
+        if (this.autoBar && this.total)
+            css(this.autoBar, 'transform', `scaleX(${clamp(view / this.total).toFixed(4)})`);
+    };
+
+    // ---------------------------------------------------------------- auto scroll
+
+    onAuto(fn) {
+        this.autoListeners.add(fn);
+        fn(!!this.auto);
+        return () => this.autoListeners.delete(fn);
+    }
+
+    notifyAuto() {
+        for (const fn of this.autoListeners) fn(!!this.auto);
+    }
+
+    // Plays the build from the current position, or from the top when the page is already finished.
+    startAuto() {
+        this.autoStartAt = 0;
+        if (this.mode !== 'build' || !this.order.length) return;
+        this.tween = null;
+        if (window.scrollY >= this.total - 2) {
+            window.scrollTo(0, 0);
+            this.snapUntil = performance.now() + 60;
+        }
+        if (window.scrollY < this.introY) window.scrollTo(0, this.introY);
+        this.auto = { y: window.scrollY, waitUntil: 0 };
+        this.notifyAuto();
+    }
+
+    stopAuto() {
+        this.autoStartAt = 0;
+        if (!this.auto) return;
+        this.auto = null;
+        this.notifyAuto();
+    }
+
+    autoStep(now, dt) {
+        const a = this.auto;
+        // the visitor scrolled (scrollbar, resize, anything not ours): hand control back
+        if (Math.abs(window.scrollY - a.y) > 3) {
+            this.stopAuto();
+            return;
+        }
+        if (now < a.waitUntil) return;
+        const s = this.order.find((t) => a.y < t.end - 0.5);
+        if (!s) {
+            this.stopAuto();
+            return;
+        }
+        let y;
+        if (a.y >= s.start) {
+            y = Math.min(s.end, a.y + (AUTO_BUILD * this.vh * dt) / 1000);
+            if (y >= s.end) a.waitUntil = now + AUTO_DWELL_MS;
+        } else {
+            y = Math.min(s.start, a.y + (GAP * this.vh * dt) / AUTO_MOVE_MS);
+        }
+        a.y = y;
+        window.scrollTo(0, y);
+    }
+
+    onUserInput = (e) => {
+        if (!this.auto && !this.autoStartAt) return;
+        if (e.type === 'keydown' && !SCROLL_KEYS.has(e.key)) return;
+        if (e.target instanceof Element && e.target.closest('[data-autoplay]')) return;
+        this.stopAuto();
     };
 
     // ---------------------------------------------------------------- planning
@@ -630,7 +723,8 @@ export default class StudioEngine {
             const x1 = Math.max(x0, B.x + B.w - 84);
             const bands = [];
             if (top >= SPOT_BAND) bands.push([x0, top / 2 - 11, x1, top / 2 - 11]);
-            if (right >= 56) bands.push([B.x + B.w + right / 2 - 9, B.y + 40, B.x + B.w + right / 2 - 9, B.y + B.h - 60]);
+            if (right >= 56)
+                bands.push([B.x + B.w + right / 2 - 9, B.y + 40, B.x + B.w + right / 2 - 9, B.y + B.h - 60]);
             if (bottom >= SPOT_BAND) bands.push([x1, B.y + B.h + bottom / 2 - 11, x0, B.y + B.h + bottom / 2 - 11]);
             if (left >= 56) bands.push([left / 2 - 9, B.y + B.h - 60, left / 2 - 9, B.y + 40]);
             if (!bands.length) bands.push([12, vh - 34, vw - 84, vh - 34]);
@@ -741,10 +835,13 @@ export default class StudioEngine {
         const last = slot.tasks.reduce((p, q) => (q.B > p.B ? q : p));
         if (last.type === 'gather') return;
         if (slot.kind === 'item' && slot.piece.animate) {
-            slot.piece.animate([{ transform: 'scale(1.08)' }, { transform: 'scale(0.97)' }, { transform: 'scale(1)' }], {
-                duration: 420,
-                easing: 'ease-out',
-            });
+            slot.piece.animate(
+                [{ transform: 'scale(1.08)' }, { transform: 'scale(0.97)' }, { transform: 'scale(1)' }],
+                {
+                    duration: 420,
+                    easing: 'ease-out',
+                },
+            );
         }
         if (!slot.block && (slot.kind === 'frame' || slot.kind === 'item' || slot.kind === 'input')) {
             this.pulse(slot, last.agent.color);
@@ -810,7 +907,9 @@ export default class StudioEngine {
             }
             case 'line': {
                 const e = easeInOut(t);
-                return slot.horizontal ? { x: R.x + R.w * e, y: R.y + R.h / 2 } : { x: R.x + R.w / 2, y: R.y + R.h * e };
+                return slot.horizontal
+                    ? { x: R.x + R.w * e, y: R.y + R.h / 2 }
+                    : { x: R.x + R.w / 2, y: R.y + R.h * e };
             }
             case 'type':
                 return this.caretPoint(slot, t, y);
@@ -1029,6 +1128,7 @@ export default class StudioEngine {
     goto(id, where = 'end') {
         const s = this.stages.get(id);
         if (!s) return;
+        this.stopAuto();
         if (this.mode !== 'build') {
             s.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             return;
@@ -1041,6 +1141,7 @@ export default class StudioEngine {
 
     setMode(mode) {
         if (mode === this.mode) return;
+        this.stopAuto();
         this.mode = mode;
         if (!this.mounted) return;
         if (mode === 'build') this.enterBuild();
