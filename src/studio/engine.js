@@ -18,6 +18,8 @@ const AUTO_BUILD = 0.11; // screen heights per second
 const AUTO_DWELL_MS = 3000;
 const AUTO_MOVE_MS = 2000;
 const AUTO_START_MS = 1000; // starts by itself this long after the page opens, unless the visitor scrolls first
+// Mobile browsers apply scrollTo a frame or two late, so only a bigger drift counts as the visitor scrolling.
+const AUTO_SLACK = 0.15; // screen heights
 const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Escape']);
 const INPUT_EVENTS = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
 
@@ -298,7 +300,8 @@ export default class StudioEngine {
         this.auto = null;
         this.autoStartAt = 0;
         this.autoListeners = new Set();
-        this.autoBar = null;
+        this.autoEl = null;
+        this.autoP = '';
     }
 
     // ---------------------------------------------------------------- registry
@@ -429,8 +432,11 @@ export default class StudioEngine {
         // completion effects only while the build moves forward at a human pace
         this.fxOn = dv > 0.05 && dv < this.vh * 0.35 && !this.tween && (intro > this.y || now >= this.snapUntil);
         this.render(view, now / 1000);
-        if (this.autoBar && this.total)
-            css(this.autoBar, 'transform', `scaleX(${clamp(view / this.total).toFixed(4)})`);
+        const p = this.total ? clamp(view / this.total).toFixed(4) : '0';
+        if (this.autoEl && p !== this.autoP) {
+            this.autoP = p;
+            this.autoEl.style.setProperty('--p', p);
+        }
     };
 
     // ---------------------------------------------------------------- auto scroll
@@ -450,12 +456,15 @@ export default class StudioEngine {
         this.autoStartAt = 0;
         if (this.mode !== 'build' || !this.order.length) return;
         this.tween = null;
-        if (window.scrollY >= this.total - 2) {
-            window.scrollTo(0, 0);
+        let y = window.scrollY;
+        if (y >= this.total - 2) {
+            y = 0;
             this.snapUntil = performance.now() + 60;
         }
-        if (window.scrollY < this.introY) window.scrollTo(0, this.introY);
-        this.auto = { y: window.scrollY, waitUntil: 0 };
+        y = Math.max(y, this.introY);
+        window.scrollTo(0, y);
+        // the jump itself may land late, so drift is only checked once it had time to settle
+        this.auto = { y, waitUntil: 0, checkFrom: performance.now() + 300 };
         this.notifyAuto();
     }
 
@@ -469,7 +478,7 @@ export default class StudioEngine {
     autoStep(now, dt) {
         const a = this.auto;
         // the visitor scrolled (scrollbar, resize, anything not ours): hand control back
-        if (Math.abs(window.scrollY - a.y) > 3) {
+        if (now > a.checkFrom && Math.abs(window.scrollY - a.y) > AUTO_SLACK * this.vh) {
             this.stopAuto();
             return;
         }

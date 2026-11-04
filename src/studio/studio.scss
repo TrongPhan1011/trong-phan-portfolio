@@ -887,7 +887,7 @@
         position: absolute;
         inset: 0;
         background: #f85023;
-        transform: scaleX(0);
+        transform: scaleX(var(--p, 0));
         transform-origin: 0 50%;
     }
 }
@@ -896,13 +896,63 @@
     background: #fff;
 }
 
-@media (max-width: 639px) {
+// Touch screens: a round button kept above the bottom strip that iOS Safari uses to bring its
+// toolbar back (taps there never reach the page); the progress runs around the rim.
+@media (pointer: coarse) {
     .st-root .st-auto {
         right: 12px;
-        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-        height: 40px;
-        padding: 0 15px 0 12px;
-        font-size: 13px;
+        bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        justify-content: center;
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        &::after {
+            animation-name: st-ping-round;
+        }
+    }
+
+    .st-auto-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .st-auto-track {
+        inset: 0;
+        height: auto;
+        border-radius: 50%;
+        background: conic-gradient(#f85023 calc(var(--p, 0) * 1turn), rgba(255, 255, 255, 0.18) 0);
+        -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+        mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px));
+
+        i {
+            display: none;
+        }
+    }
+
+    .st-auto.is-playing .st-auto-track {
+        background: conic-gradient(#fff calc(var(--p, 0) * 1turn), rgba(255, 255, 255, 0.3) 0);
+    }
+}
+
+@keyframes st-ping-round {
+    0% {
+        transform: scale(1);
+        opacity: 0.55;
+    }
+    75%,
+    100% {
+        transform: scale(1.4);
+        opacity: 0;
     }
 }
 
