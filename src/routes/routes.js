@@ -10,6 +10,7 @@ const publicRoutes = [
     {
         path: route.home,
         component: Home,
+        layout: null,
     },
 ];
 const privateRoutes = [];

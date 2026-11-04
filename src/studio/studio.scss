@@ -1,0 +1,861 @@
+.st-root {
+    --blk-y: 30px;
+    --blk-x: 24px;
+    --blk-maxw: 1240px;
+    --ui: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    color: #18181b;
+}
+
+@media (max-width: 639px) {
+    .st-root {
+        --blk-y: 34px;
+        --blk-x: 10px;
+    }
+}
+
+// ------------------------------------------------------------------ screen & background
+
+.st-screen {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+}
+
+.st-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: #f7f6f2;
+}
+
+// watercolor paper; the engine slides it up by at most (sections - 1) * 26px, hence the extra bottom
+.st-bg-layer {
+    position: absolute;
+    inset: 0 0 -160px;
+    background: url('../assets/img/bg-paper.webp') center / cover no-repeat;
+    will-change: transform;
+}
+
+// on portrait screens the sheet is turned sideways so both color corners stay in view
+@media (orientation: portrait) {
+    .st-bg-layer {
+        background-image: url('../assets/img/bg-paper-tall.webp');
+    }
+}
+
+.st-world {
+    position: absolute;
+    inset: 0;
+}
+
+.st-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: var(--stage-h, 100vh);
+    will-change: transform;
+    visibility: hidden;
+}
+
+.st-stage.is-off {
+    *,
+    *::before,
+    *::after {
+        animation-play-state: paused !important;
+    }
+}
+
+.st-spacer {
+    width: 1px;
+    pointer-events: none;
+}
+
+// ------------------------------------------------------------------ section blocks
+
+.st-block {
+    position: absolute;
+    isolation: isolate;
+    top: var(--blk-y);
+    bottom: var(--blk-y);
+    left: max(var(--blk-x), calc(50% - var(--blk-maxw) / 2));
+    right: max(var(--blk-x), calc(50% - var(--blk-maxw) / 2));
+}
+
+.st-body {
+    position: absolute;
+    inset: 0;
+}
+
+.st-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    transform-origin: 50% 0;
+
+    > * {
+        flex: 1 0 auto;
+    }
+}
+
+.st-fx {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.st-spark {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+
+    &.is-star {
+        width: 12px;
+        height: 12px;
+        margin: -6px 0 0 -6px;
+        border-radius: 0;
+        clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    }
+}
+
+.st-pulse {
+    position: absolute;
+    box-sizing: border-box;
+    border: 2px solid currentColor;
+    box-shadow: 0 0 16px -2px currentColor;
+    opacity: 0;
+    pointer-events: none;
+}
+
+// ------------------------------------------------------------------ shapes
+
+.st-box {
+    position: relative;
+    isolation: isolate;
+}
+
+.st-surface {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.st-fill {
+    position: absolute;
+    inset: 0;
+    display: block;
+    border-radius: inherit;
+    opacity: 0;
+}
+
+.is-build .st-surface {
+    opacity: 0;
+}
+
+.st-item {
+    position: relative;
+}
+
+.st-piece {
+    display: block;
+}
+
+.is-build .st-item > .st-piece,
+.is-build .st-line-piece {
+    opacity: 0;
+}
+
+.st-line {
+    position: relative;
+}
+
+.st-line-piece {
+    position: absolute;
+    inset: 0;
+    transform-origin: 0 0;
+}
+
+// ------------------------------------------------------------------ typing
+
+.st-text-piece {
+    display: inline-block;
+    max-width: 100%;
+}
+
+.st-off {
+    color: transparent;
+}
+
+.st-caret {
+    display: none;
+    width: 2px;
+    height: 1.05em;
+    margin: 0 -1px;
+    vertical-align: -0.15em;
+    border-radius: 1px;
+    animation: st-blink 1.05s steps(1) infinite;
+}
+
+@keyframes st-blink {
+    50% {
+        opacity: 0;
+    }
+}
+
+// ------------------------------------------------------------------ life after the build
+// Finished elements keep moving a little. Each one starts when its slot is done ([data-done]);
+// group effects (.st-hop, .st-comet) wait for the whole section.
+
+.st-btn {
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+
+    > .st-surface {
+        transition: box-shadow 0.25s ease;
+    }
+
+    &:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    &.is-cta::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 12px;
+        box-shadow: 0 0 0 2px var(--ring);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &.is-cta:has(> :last-child[data-done])::after {
+        animation: st-ping 2.8s cubic-bezier(0, 0, 0.2, 1) 0.4s infinite;
+    }
+}
+
+.st-btn-icon,
+.st-btn-icon > .st-piece,
+.st-icon {
+    display: inline-flex;
+}
+
+.st-btn-icon[data-done] .st-icon {
+    animation: st-nudge 1.8s ease-in-out 0.3s infinite;
+}
+
+.st-btn.is-rise .st-btn-icon[data-done] .st-icon {
+    animation-name: st-rise;
+}
+
+.st-btn.is-drop .st-btn-icon[data-done] .st-icon {
+    animation: st-drop 2.4s ease-in-out 0.3s infinite;
+}
+
+.st-btn.is-send .st-btn-icon[data-done] .st-icon {
+    animation: st-send 3.2s ease-in-out 0.3s infinite;
+}
+
+.st-btn.is-spin .st-btn-icon[data-done] .st-icon {
+    animation: st-spin 4s cubic-bezier(0.65, 0, 0.35, 1) 0.3s infinite;
+}
+
+.st-dot {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: inherit;
+        opacity: 0;
+    }
+}
+
+.st-item[data-done] .st-dot::after {
+    animation: st-dot 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.st-wiggle {
+    display: inline-block;
+}
+
+.st-item[data-done] > .st-piece {
+    > .st-bob {
+        animation: st-bob 3.8s ease-in-out var(--bdl, 0s) infinite;
+    }
+
+    > .st-float {
+        animation: st-float var(--fd, 9s) ease-in-out var(--fdl, 0s) infinite;
+    }
+
+    > .st-wiggle {
+        animation: st-wiggle 4.5s ease-in-out 0.8s infinite;
+    }
+
+    > .st-blob {
+        animation: st-blob 18s ease-in-out infinite alternate;
+    }
+}
+
+.st-block[data-done] .st-hop {
+    animation: st-hop 6s ease-in-out calc(0.5s + var(--i, 0) * 70ms) infinite;
+}
+
+// a spark that runs along the timeline: vertical on phones, horizontal from lg up
+.st-comet {
+    position: absolute;
+    inset: -8px;
+    overflow: hidden;
+    pointer-events: none;
+
+    > i {
+        position: absolute;
+        inset: 8px;
+        opacity: 0;
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: 0;
+        }
+
+        &::before {
+            width: 8px;
+            height: 8px;
+            margin: 0 0 -4px -4px;
+            border-radius: 50%;
+            background: #f85023;
+            box-shadow:
+                0 0 0 3px rgba(248, 80, 35, 0.2),
+                0 0 10px rgba(248, 80, 35, 0.7);
+        }
+
+        &::after {
+            width: 2px;
+            height: 56px;
+            margin-left: -1px;
+            background: linear-gradient(to bottom, rgba(248, 80, 35, 0), #f85023);
+        }
+    }
+}
+
+.st-block[data-done] .st-comet > i {
+    animation: st-comet-y 5s cubic-bezier(0.45, 0, 0.25, 1) 0.6s infinite;
+}
+
+@media (min-width: 1024px) {
+    .st-comet > i {
+        &::before,
+        &::after {
+            left: auto;
+            right: 0;
+            top: 50%;
+            bottom: auto;
+        }
+
+        &::before {
+            margin: -4px -4px 0 0;
+        }
+
+        &::after {
+            width: 72px;
+            height: 2px;
+            margin: -1px 0 0;
+            background: linear-gradient(to right, rgba(248, 80, 35, 0), #f85023);
+        }
+    }
+
+    .st-block[data-done] .st-comet > i {
+        animation-name: st-comet-x;
+    }
+}
+
+.st-navlink {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -5px;
+        height: 2px;
+        border-radius: 2px;
+        background: #f85023;
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        transition: transform 0.25s ease;
+    }
+
+    &:hover::after,
+    &:focus-visible::after {
+        transform: scaleX(1);
+    }
+}
+
+@media (hover: hover) {
+    .st-btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+
+        > .st-surface {
+            box-shadow: 0 12px 22px -12px var(--ring);
+        }
+    }
+
+    .st-lift {
+        transition:
+            transform 0.25s ease,
+            box-shadow 0.25s ease;
+
+        &:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 26px -16px rgba(24, 24, 27, 0.4);
+        }
+    }
+
+    .st-card {
+        transition: transform 0.3s ease;
+
+        &:hover {
+            transform: translateY(-4px);
+        }
+    }
+}
+
+@keyframes st-ping {
+    0% {
+        transform: scale(1);
+        opacity: 0.55;
+    }
+    75%,
+    100% {
+        transform: scale(1.08, 1.34);
+        opacity: 0;
+    }
+}
+
+@keyframes st-nudge {
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(4px);
+    }
+}
+
+@keyframes st-rise {
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+    50% {
+        transform: translate(2px, -2px);
+    }
+}
+
+@keyframes st-drop {
+    0%,
+    50%,
+    100% {
+        transform: translateY(0);
+    }
+    65% {
+        transform: translateY(3px);
+    }
+    80% {
+        transform: translateY(-1px);
+    }
+}
+
+@keyframes st-send {
+    0%,
+    55%,
+    100% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+    70% {
+        transform: translate(8px, -8px);
+        opacity: 0;
+    }
+    71% {
+        transform: translate(-8px, 8px);
+        opacity: 0;
+    }
+    86% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes st-spin {
+    0%,
+    62% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes st-dot {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+    80%,
+    100% {
+        transform: scale(2.8);
+        opacity: 0;
+    }
+}
+
+@keyframes st-bob {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        transform: translate3d(0, -6px, 0);
+    }
+}
+
+@keyframes st-float {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+    50% {
+        transform: translate3d(0, var(--fy, -10px), 0) rotate(var(--fr, 3deg));
+    }
+}
+
+@keyframes st-wiggle {
+    0%,
+    78%,
+    100% {
+        transform: rotate(0deg) scale(1);
+    }
+    82% {
+        transform: rotate(-9deg) scale(1.1);
+    }
+    86% {
+        transform: rotate(7deg) scale(1.1);
+    }
+    90% {
+        transform: rotate(-4deg) scale(1.04);
+    }
+    94% {
+        transform: rotate(2deg) scale(1);
+    }
+}
+
+@keyframes st-blob {
+    from {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+        transform: translate3d(5%, 7%, 0) scale(1.1);
+    }
+}
+
+@keyframes st-hop {
+    0%,
+    12%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    5% {
+        transform: translate3d(0, -7px, 0) scale(1.08);
+    }
+    9% {
+        transform: translate3d(0, 1px, 0) scale(0.98);
+    }
+}
+
+@keyframes st-comet-y {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    8% {
+        opacity: 1;
+    }
+    72% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    80%,
+    100% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+}
+
+@keyframes st-comet-x {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    8% {
+        opacity: 1;
+    }
+    72% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    80%,
+    100% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+}
+
+// ------------------------------------------------------------------ agents
+
+.st-agents {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    overflow: hidden;
+    pointer-events: none;
+    contain: strict;
+}
+
+.st-agent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform;
+}
+
+.st-arrow {
+    position: absolute;
+    left: -1.5px;
+    top: -1.5px;
+    overflow: visible;
+    filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.28));
+
+    path {
+        fill: var(--c);
+    }
+}
+
+.st-label {
+    position: absolute;
+    left: 14px;
+    top: 18px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--c);
+    color: var(--ink);
+    font: 600 11px/1.2 var(--ui);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.st-ring {
+    position: absolute;
+    left: -14px;
+    top: -14px;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--c);
+    border-radius: 50%;
+    opacity: 0;
+}
+
+.st-sel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: none;
+    box-shadow: 0 0 0 1.5px var(--c);
+    transform-origin: 50% 50%;
+    will-change: transform;
+
+    &[data-kind='type'] {
+        box-shadow: 0 0 0 1px var(--c);
+    }
+
+    &[data-kind='polish']::after {
+        content: '';
+        position: absolute;
+        left: var(--d, 7px);
+        top: var(--d, 7px);
+        width: 10px;
+        height: 10px;
+        margin: -5px 0 0 -5px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 0 0 1.5px var(--c);
+    }
+}
+
+.st-badge {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 7px);
+    transform: translateX(-50%);
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--c);
+    color: var(--ink);
+    font: 600 10px/1.4 var(--ui);
+    white-space: nowrap;
+}
+
+.st-h {
+    display: none;
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    box-shadow: 0 0 0 1.5px var(--c);
+}
+
+.st-h1 {
+    left: -4px;
+    top: -4px;
+}
+
+.st-h2 {
+    right: -4px;
+    top: -4px;
+}
+
+.st-h3 {
+    left: -4px;
+    bottom: -4px;
+}
+
+.st-h4 {
+    right: -4px;
+    bottom: -4px;
+}
+
+.st-sel[data-kind='draw'],
+.st-sel[data-kind='scale'] {
+    .st-badge,
+    .st-h {
+        display: block;
+    }
+}
+
+.st-sel[data-kind='drag'] .st-h {
+    display: block;
+}
+
+.st-sel[data-kind='polish'] .st-badge {
+    display: block;
+    left: calc(var(--d, 7px) + 18px);
+    top: calc(var(--d, 7px) + 28px);
+    transform: none;
+}
+
+@media (max-width: 639px) {
+    .st-label {
+        left: 11px;
+        top: 15px;
+        padding: 2px 6px;
+        font-size: 9.5px;
+    }
+
+    .st-arrow {
+        transform: scale(0.85);
+        transform-origin: 1.5px 1.5px;
+    }
+
+    .st-badge {
+        font-size: 9px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .st-btn::after,
+    .st-icon,
+    .st-dot::after,
+    .st-bob,
+    .st-float,
+    .st-wiggle,
+    .st-blob,
+    .st-hop,
+    .st-comet > i {
+        animation: none !important;
+    }
+}
+
+// ------------------------------------------------------------------ final design: a regular scrolling page
+
+.is-present {
+    .st-screen {
+        position: relative;
+        inset: auto;
+        overflow: visible;
+    }
+
+    .st-bg {
+        position: fixed;
+    }
+
+    .st-agents,
+    .st-fx {
+        display: none;
+    }
+
+    .st-world {
+        position: relative;
+        inset: auto;
+        padding: 6px 0;
+    }
+
+    .st-stage {
+        position: relative;
+        height: auto;
+        padding: 10px var(--blk-x);
+        visibility: visible;
+        will-change: auto;
+    }
+
+    .st-block {
+        position: relative;
+        inset: auto;
+        max-width: var(--blk-maxw);
+        min-height: calc(100vh - 32px);
+        margin: 0 auto;
+    }
+
+    .st-body {
+        position: relative;
+        inset: auto;
+        display: flex;
+        flex-direction: column;
+        min-height: inherit;
+    }
+
+    .st-content {
+        position: relative;
+        flex: 1 0 auto;
+        min-height: 0;
+    }
+}

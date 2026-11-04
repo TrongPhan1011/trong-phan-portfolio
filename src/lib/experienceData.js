@@ -1,4 +1,4 @@
-import vinbrainLogo from '../assets/img/VinBrain-logo.png';
+import vinbrainLogo from '../assets/img/vinbrain_logo.webp';
 import nvidiaLogo from '../assets/img/nvidia_logo.png';
 import housenowLogo from '../assets/img/housenow_logo.svg';
 
