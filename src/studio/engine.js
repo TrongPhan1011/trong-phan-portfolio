@@ -299,6 +299,7 @@ export default class StudioEngine {
         this.introY = 0;
         this.auto = null;
         this.autoStartAt = 0;
+        this.autoStartHeld = false; // something else (a first screen) starts the auto scroll
         this.autoListeners = new Set();
         this.autoEl = null;
         this.autoP = '';
@@ -358,7 +359,7 @@ export default class StudioEngine {
             this.y = window.scrollY;
             this.view = this.y;
             this.render(this.y, performance.now() / 1000);
-            this.autoStartAt = this.mountedAt + AUTO_START_MS;
+            if (!this.autoStartHeld) this.autoStartAt = this.mountedAt + AUTO_START_MS;
         } else {
             this.enterPresent(false);
         }
@@ -502,7 +503,8 @@ export default class StudioEngine {
     onUserInput = (e) => {
         if (!this.auto && !this.autoStartAt) return;
         if (e.type === 'keydown' && !SCROLL_KEYS.has(e.key)) return;
-        if (e.target instanceof Element && e.target.closest('[data-autoplay]')) return;
+        // the floating controls (auto scroll, music) never take control away from the auto scroll
+        if (e.target instanceof Element && e.target.closest('[data-st-control]')) return;
         this.stopAuto();
     };
 

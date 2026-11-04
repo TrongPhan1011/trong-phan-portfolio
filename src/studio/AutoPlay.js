@@ -20,7 +20,7 @@ function AutoPlay() {
                 engine.autoP = '';
             }}
             type="button"
-            data-autoplay=""
+            data-st-control=""
             aria-pressed={playing}
             title={playing ? 'Pause' : 'Scroll through the build automatically'}
             className={cx('st-auto', playing && 'is-playing')}

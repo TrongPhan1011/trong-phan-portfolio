@@ -792,6 +792,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .st-gate-enter::after,
+    .st-music.is-on .st-eq i,
     .st-root .st-auto::after,
     .st-btn::after,
     .st-icon,
@@ -958,6 +960,190 @@
 
 .st-root.is-present .st-auto {
     display: none;
+}
+
+// ------------------------------------------------------------------ background music
+
+.st-root .st-music {
+    position: fixed;
+    left: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #18181b;
+    color: #fff;
+    box-shadow: 0 12px 28px -12px rgba(24, 24, 27, 0.6);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+
+    // muted: a slash across the bars
+    &::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 24px;
+        height: 2px;
+        margin: -1px 0 0 -12px;
+        border-radius: 2px;
+        background: #f85023;
+        box-shadow: 0 0 0 2px #18181b;
+        transform: rotate(-45deg);
+        transition:
+            transform 0.25s ease,
+            opacity 0.25s ease;
+    }
+
+    &.is-on::after {
+        opacity: 0;
+        transform: rotate(-45deg) scaleX(0);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #f85023;
+        outline-offset: 3px;
+    }
+
+    &:active {
+        transform: scale(0.95);
+    }
+}
+
+@media (hover: hover) {
+    .st-root .st-music:hover {
+        transform: translateY(-2px);
+    }
+}
+
+.st-eq {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 16px;
+
+    i {
+        width: 3px;
+        height: 100%;
+        border-radius: 2px;
+        background: currentColor;
+        opacity: 0.55;
+        transform: scaleY(0.35);
+        transform-origin: 50% 100%;
+        transition:
+            transform 0.3s ease,
+            opacity 0.3s ease;
+    }
+}
+
+.st-music.is-on .st-eq i {
+    opacity: 1;
+    animation: st-eq 0.9s ease-in-out infinite alternate;
+
+    &:nth-child(2) {
+        animation-duration: 0.7s;
+        animation-delay: -0.35s;
+    }
+
+    &:nth-child(3) {
+        animation-duration: 1.05s;
+        animation-delay: -0.6s;
+    }
+
+    &:nth-child(4) {
+        animation-duration: 0.8s;
+        animation-delay: -0.15s;
+    }
+}
+
+@keyframes st-eq {
+    from {
+        transform: scaleY(0.25);
+    }
+    to {
+        transform: scaleY(1);
+    }
+}
+
+@media (pointer: coarse) {
+    .st-root .st-music {
+        left: 12px;
+        bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+        width: 48px;
+        height: 48px;
+    }
+}
+
+// ------------------------------------------------------------------ first screen
+
+.st-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    background: rgba(247, 246, 242, 0.66);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    animation: st-gate-in 0.5s ease both;
+
+    &.is-leaving {
+        pointer-events: none;
+        animation: st-gate-out 0.4s ease both;
+    }
+}
+
+.st-gate-card {
+    animation: st-gate-card-in 0.8s cubic-bezier(0.2, 0.8, 0.3, 1) 0.1s both;
+}
+
+.st-gate.is-leaving .st-gate-card {
+    animation: st-gate-card-out 0.4s ease both;
+}
+
+.st-gate-enter {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow: 0 0 0 2px #f85023;
+        opacity: 0;
+        pointer-events: none;
+        animation: st-ping 2.4s cubic-bezier(0, 0, 0.2, 1) 1s infinite;
+    }
+}
+
+@keyframes st-gate-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes st-gate-out {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes st-gate-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+    }
+}
+
+@keyframes st-gate-card-out {
+    to {
+        opacity: 0;
+        transform: translateY(-10px) scale(1.02);
+    }
 }
 
 // ------------------------------------------------------------------ final design: a regular scrolling page
