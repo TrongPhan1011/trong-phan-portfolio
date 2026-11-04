@@ -792,6 +792,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .st-root .st-auto::after,
     .st-btn::after,
     .st-icon,
     .st-dot::after,
@@ -803,6 +804,110 @@
     .st-comet > i {
         animation: none !important;
     }
+}
+
+// ------------------------------------------------------------------ auto scroll
+// `.st-root` raises specificity above Tailwind's button reset, which is bundled later.
+
+.st-root .st-auto {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 50;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px 0 15px;
+    border-radius: 999px;
+    background: #18181b;
+    color: #fff;
+    font: 600 14px/1 var(--ui);
+    letter-spacing: 0.01em;
+    box-shadow: 0 12px 28px -12px rgba(24, 24, 27, 0.6);
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background-color 0.25s ease;
+    -webkit-tap-highlight-color: transparent;
+
+    svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+    }
+
+    // a few rings right after load, so visitors notice it
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow: 0 0 0 2px #f85023;
+        opacity: 0;
+        pointer-events: none;
+        animation: st-ping 2.6s cubic-bezier(0, 0, 0.2, 1) 2s 3;
+    }
+
+    &.is-playing {
+        background: #f85023;
+
+        &::after {
+            animation: none;
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid #f85023;
+        outline-offset: 3px;
+    }
+
+    &:active {
+        transform: scale(0.97);
+    }
+}
+
+@media (hover: hover) {
+    .st-root .st-auto:hover {
+        transform: translateY(-2px);
+    }
+}
+
+.st-auto-track {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 6px;
+    height: 2px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.18);
+
+    i {
+        position: absolute;
+        inset: 0;
+        background: #f85023;
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+    }
+}
+
+.st-auto.is-playing .st-auto-track i {
+    background: #fff;
+}
+
+@media (max-width: 639px) {
+    .st-root .st-auto {
+        right: 12px;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        height: 40px;
+        padding: 0 15px 0 12px;
+        font-size: 13px;
+    }
+}
+
+.st-root.is-present .st-auto {
+    display: none;
 }
 
 // ------------------------------------------------------------------ final design: a regular scrolling page

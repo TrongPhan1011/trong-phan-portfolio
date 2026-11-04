@@ -20,7 +20,7 @@ export const experiences = [
     {
         id: 1,
         companyName: 'HouseNow Joint Stock',
-        workTime: '08/2023 - Now',
+        workTime: '08/2023 - 08/2024',
         position: 'Backend Developer',
         logoCompanySource: housenowLogo,
     },
