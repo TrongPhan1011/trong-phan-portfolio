@@ -6,6 +6,10 @@ module.exports = {
             colors: {
                 'tp-orange': '#F85023',
             },
+            fontFamily: {
+                sans: ['Jost', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                ui: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            },
             boxShadow: {
                 '2t-blue-1': ' 0px 0px 15px 3px rgba(0, 194, 255, 0.01)',
                 '2t-green-1': ' 0px 0px 15px 3px rgba(0, 200, 44, 0.01)',
